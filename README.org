@@ -34,15 +34,25 @@ pnpm install
 # Start development server
 pnpm dev
 
-# Build for production
+# Build static site
 pnpm build
 #+end_src
 
-** Deployment
+** Static Build
 
-Configured for Vercel deployment with local FFmpeg dependencies.
+This project is configured to generate a static site (no server-side rendering).
+
+- Output directory: =out/=
+- All files are static HTML/CSS/JS
+- FFmpeg dependencies included in build
+- Can be deployed to any static hosting service
+
+** Deployment
 
 #+begin_src bash
 # Deploy to Vercel
 vercel
+
+# Or serve static files from 'out' directory
+npx serve out
 #+end_src

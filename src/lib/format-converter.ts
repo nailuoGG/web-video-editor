@@ -232,7 +232,7 @@ export async function convertFile(options: ConversionOptions): Promise<Conversio
   }
   
   const mimeType = mimeTypeMap[outputFormat] || 'application/octet-stream'
-  const resultBlob = new Blob([data.buffer], { type: mimeType })
+  const resultBlob = new Blob([new Uint8Array(data)], { type: mimeType })
   
   return {
     file: resultBlob,

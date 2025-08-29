@@ -1,10 +1,7 @@
-import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { toBlobURL } from '@ffmpeg/util'
-
-let ffmpeg: FFmpeg | null = null
+let ffmpeg: any = null
 let isLoaded = false
 
-export const getFFmpeg = async (): Promise<FFmpeg> => {
+export const getFFmpeg = async (): Promise<any> => {
   if (ffmpeg && isLoaded) {
     return ffmpeg
   }
@@ -14,6 +11,10 @@ export const getFFmpeg = async (): Promise<FFmpeg> => {
   }
 
   try {
+    // Dynamic import to avoid SSR issues
+    const { FFmpeg } = await import('@ffmpeg/ffmpeg')
+    const { toBlobURL } = await import('@ffmpeg/util')
+    
     // Use local files from node_modules instead of CDN
     const baseURL = '/ffmpeg'
     ffmpeg = new FFmpeg()

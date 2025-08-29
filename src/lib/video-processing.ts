@@ -16,7 +16,7 @@ export async function processVideo(
   
   // Set up progress callback
   if (onProgress) {
-    ffmpeg.on('progress', ({ progress, time }) => {
+    ffmpeg.on('progress', ({ progress, time }: { progress: number; time: number }) => {
       onProgress({
         progress: Math.round(progress * 100),
         status: `Processing... ${Math.round(progress * 100)}%`,
@@ -31,7 +31,7 @@ export async function processVideo(
   // Read output file
   const outputData = await ffmpeg.readFile('output.mp4')
   const data = outputData as Uint8Array
-  return new Blob([data.buffer], { type: 'video/mp4' })
+  return new Blob([new Uint8Array(data)], { type: 'video/mp4' })
 }
 
 function buildFFmpegCommands(options: VideoProcessingOptions): string[] {
@@ -137,6 +137,6 @@ export async function extractFrame(file: File, time: number): Promise<string> {
   ])
   
   const frameData = await ffmpeg.readFile('frame.jpg')
-  const blob = new Blob([frameData as Uint8Array], { type: 'image/jpeg' })
+  const blob = new Blob([new Uint8Array(frameData as Uint8Array)], { type: 'image/jpeg' })
   return URL.createObjectURL(blob)
 }

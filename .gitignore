@@ -7,3 +7,6 @@ tmp/
 
 node_modules/
 tsconfig.tsbuildinfo
+out/
+dist/
+build/
