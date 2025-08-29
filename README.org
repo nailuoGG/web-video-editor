@@ -1,31 +1,48 @@
- 如何实现 一个这样的 demo
+* Web Video Editor
 
- 利用 ffmpeg.wasm 来在前端浏览器里进行简单的视频操作
+A browser-based file format converter powered by FFmpeg WebAssembly.
 
-- cut
-- 调速
-- 倒放
+** Features
 
-我的理解是类似视频编辑器的界面：
+- Convert video, audio, and image files to different formats
+- Drag & drop file upload interface
+- Automatic file type detection
+- Real-time conversion progress
+- Local FFmpeg processing (no external dependencies)
+- One-click download of converted files
 
-- 视频导入，可以看到导入的视频播放器
-- 时间轴区域
-- 效果菜单，可以快速拖动想要的效果到时间轴上，例如 cut、调速、倒放
-- 结果预览区域，
-- 草稿区域
+** Supported Formats
 
-首先实现 cut
+- *Video*: MP4, WebM, AVI, MOV
+- *Audio*: MP3, WAV, AAC, OGG
+- *Image*: JPEG, PNG, WebP, GIF
 
- 1. 做 wasm/ffmpeg 初始化
- 2. 载入视频文件/或者在线的视频文件
- 3. 将视频文件放到 ffmpeg 中
- 4. 视频放到播放器中预览
- 5. 通过时间轴来获取剪辑的时间范围
- 6. 调用 ffmpet 进行 cut 处理，得到处理后的视频流
- 7. 导出的结果，放到草稿区域，可以进行保存
+** Tech Stack
 
+- Next.js 14.2.5
+- React 18
+- TypeScript
+- Tailwind CSS
+- FFmpeg WebAssembly (@ffmpeg/ffmpeg)
 
- 技术要求：
+** Getting Started
 
- 1. 使用 tailwindCSS 4.x 最新版本
- 2. 使用 Next.js 官方的初始化工具
+#+begin_src bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+#+end_src
+
+** Deployment
+
+Configured for Vercel deployment with local FFmpeg dependencies.
+
+#+begin_src bash
+# Deploy to Vercel
+vercel
+#+end_src
