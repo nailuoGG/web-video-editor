@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 
 // Copy FFmpeg core files from node_modules to public directory
-const sourceDir = path.join(__dirname, '../node_modules/@ffmpeg/core/dist/umd')
+const sourceDir = path.join(__dirname, '../node_modules/@ffmpeg/core-mt/dist/umd')
 const targetDir = path.join(__dirname, '../public/ffmpeg')
 
 // Ensure target directory exists
