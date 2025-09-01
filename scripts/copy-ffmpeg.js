@@ -7,25 +7,26 @@ const targetDir = path.join(__dirname, '../public/ffmpeg')
 
 // Ensure target directory exists
 if (!fs.existsSync(targetDir)) {
-  fs.mkdirSync(targetDir, { recursive: true })
+    fs.mkdirSync(targetDir, { recursive: true })
 }
 
 // Files to copy
 const filesToCopy = [
-  'ffmpeg-core.js',
-  'ffmpeg-core.wasm'
+    'ffmpeg-core.js',
+    'ffmpeg-core.wasm',
+    'ffmpeg-core.worker.js'
 ]
 
 filesToCopy.forEach(file => {
-  const sourcePath = path.join(sourceDir, file)
-  const targetPath = path.join(targetDir, file)
-  
-  if (fs.existsSync(sourcePath)) {
-    fs.copyFileSync(sourcePath, targetPath)
-    console.log(`Copied ${file} to public/ffmpeg/`)
-  } else {
-    console.error(`Source file not found: ${sourcePath}`)
-  }
+    const sourcePath = path.join(sourceDir, file)
+    const targetPath = path.join(targetDir, file)
+
+    if (fs.existsSync(sourcePath)) {
+        fs.copyFileSync(sourcePath, targetPath)
+        console.log(`Copied ${file} to public/ffmpeg/`)
+    } else {
+        console.error(`Source file not found: ${sourcePath}`)
+    }
 })
 
 console.log('FFmpeg core files copied successfully!')
