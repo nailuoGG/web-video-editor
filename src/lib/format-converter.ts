@@ -1,7 +1,5 @@
 import { getFFmpeg } from './ffmpeg'
 import { ConversionOptions, ConversionResult, ConversionConfig } from '@/types/video'
-import {Simulate} from "react-dom/test-utils";
-import progress = Simulate.progress;
 
 // Default conversion configurations
 const DEFAULT_CONFIG: ConversionConfig = {
