@@ -21,12 +21,10 @@ export const getFFmpeg = async (): Promise<any> => {
 
     await ffmpeg.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
     })
 
     isLoaded = true
-      console.log('ffmpeg loaded')
     return ffmpeg
   } catch (error) {
     console.error('Failed to load FFmpeg:', error)
