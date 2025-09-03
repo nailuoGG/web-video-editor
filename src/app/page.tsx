@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { convertFile, getSupportedFormats } from '@/lib/format-converter'
+import { convertFileWithWebCodecs, getWebCodecsSupportedFormats, isWebCodecsSupported } from '@/lib/webcodecs-converter'
 import { ConversionResult } from '@/types/video'
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
   const [error, setError] = useState<string>('')
   const [targetFormat, setTargetFormat] = useState<string>('')
   const [dragActive, setDragActive] = useState(false)
+  const [useWebCodecs, setUseWebCodecs] = useState(false)
 
   // Handle file selection
   const handleFileSelect = useCallback((file: File) => {
@@ -20,11 +22,11 @@ export default function Home() {
     
     // Auto-detect file type and set default target format
     const fileType = file.type.split('/')[0] as 'video' | 'audio' | 'image'
-    const supportedFormats = getSupportedFormats(fileType)
+    const supportedFormats = useWebCodecs ? getWebCodecsSupportedFormats(fileType) : getSupportedFormats(fileType)
     if (supportedFormats.length > 0) {
       setTargetFormat(supportedFormats[0])
     }
-  }, [])
+  }, [useWebCodecs])
 
   // Handle drag events
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -65,18 +67,35 @@ export default function Home() {
     setError('')
     
     try {
-      const result = await convertFile({
-        inputFile: selectedFile,
-        targetFormat,
-        autoDetect: true
+      console.log(`[Converter] Using ${useWebCodecs ? 'WebCodecs' : 'FFmpeg'} for conversion`)
+      console.log(`[Converter] Input:`, {
+        name: selectedFile.name,
+        size: `${(selectedFile.size / 1024 / 1024).toFixed(2)}MB`,
+        type: selectedFile.type,
+        targetFormat
       })
+      
+      const result = useWebCodecs 
+        ? await convertFileWithWebCodecs({
+            inputFile: selectedFile,
+            targetFormat,
+            autoDetect: true
+          })
+        : await convertFile({
+            inputFile: selectedFile,
+            targetFormat,
+            autoDetect: true
+          })
+      
+      console.log(`[Converter] Conversion completed successfully using ${useWebCodecs ? 'WebCodecs' : 'FFmpeg'}`)
       setConversionResult(result)
     } catch (err) {
+      console.error(`[Converter] Conversion failed with ${useWebCodecs ? 'WebCodecs' : 'FFmpeg'}:`, err)
       setError(err instanceof Error ? err.message : 'Conversion failed')
     } finally {
       setIsConverting(false)
     }
-  }, [selectedFile, targetFormat])
+  }, [selectedFile, targetFormat, useWebCodecs])
 
   // Download converted file
   const handleDownload = useCallback(() => {
@@ -96,7 +115,7 @@ export default function Home() {
   const getSupportedFormatsForFile = () => {
     if (!selectedFile) return []
     const fileType = selectedFile.type.split('/')[0] as 'video' | 'audio' | 'image'
-    return getSupportedFormats(fileType)
+    return useWebCodecs ? getWebCodecsSupportedFormats(fileType) : getSupportedFormats(fileType)
   }
 
   // Format file size
@@ -114,6 +133,47 @@ export default function Home() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">File Format Converter</h1>
           <p className="text-gray-600">Convert your video, audio, and image files to different formats</p>
+          
+          {/* Converter Selection */}
+          <div className="mt-6 flex justify-center">
+            <div className="bg-white rounded-lg p-1 shadow-sm border">
+              <button
+                onClick={() => setUseWebCodecs(false)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  !useWebCodecs
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                FFmpeg (Full Support)
+              </button>
+              <button
+                onClick={() => setUseWebCodecs(true)}
+                disabled={!isWebCodecsSupported()}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  useWebCodecs
+                    ? 'bg-green-100 text-green-700'
+                    : 'text-gray-500 hover:text-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed'
+                }`}
+              >
+                WebCodecs (Native)
+                {!isWebCodecsSupported() && ' ❌'}
+              </button>
+            </div>
+          </div>
+          
+          {/* Info about current converter */}
+          <div className="mt-4 text-sm text-gray-500">
+            {useWebCodecs ? (
+              isWebCodecsSupported() ? (
+                <span className="text-green-600">✅ Using native browser WebCodecs API</span>
+              ) : (
+                <span className="text-red-600">❌ WebCodecs not supported in this browser</span>
+              )
+            ) : (
+              <span className="text-blue-600">🔧 Using FFmpeg.wasm for maximum format support</span>
+            )}
+          </div>
         </div>
 
         {/* File Upload Area */}
@@ -227,7 +287,12 @@ export default function Home() {
         {/* Conversion Result */}
         {conversionResult && (
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Conversion Complete! ✅</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Conversion Complete! ✅ 
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                (using {useWebCodecs ? 'WebCodecs API' : 'FFmpeg.wasm'})
+              </span>
+            </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="p-4 bg-gray-50 rounded-lg">
