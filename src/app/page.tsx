@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { convertFile, getSupportedFormats } from '@/lib/format-converter'
 import { convertFileWithWebCodecs, getWebCodecsSupportedFormats, isWebCodecsSupported } from '@/lib/webcodecs-converter'
 import { ConversionResult } from '@/types/video'
+import { log } from 'console'
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -13,6 +14,12 @@ export default function Home() {
   const [targetFormat, setTargetFormat] = useState<string>('')
   const [dragActive, setDragActive] = useState(false)
   const [useWebCodecs, setUseWebCodecs] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
+  // Client-side mount effect to avoid SSR hydration mismatch
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Handle file selection
   const handleFileSelect = useCallback((file: File) => {
@@ -126,6 +133,19 @@ export default function Home() {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
+  // Only check WebCodecs support on client side to avoid SSR hydration mismatch
+  const webCodecsSupported = isClient && isWebCodecsSupported()
+  
+  console.log("Debug - WebCodecs Support Details:", {
+    isClient,
+    supported: webCodecsSupported,
+    VideoDecoder: typeof window !== 'undefined' && 'VideoDecoder' in window,
+    VideoEncoder: typeof window !== 'undefined' && 'VideoEncoder' in window,
+    AudioDecoder: typeof window !== 'undefined' && 'AudioDecoder' in window,
+    AudioEncoder: typeof window !== 'undefined' && 'AudioEncoder' in window,
+    useWebCodecs: useWebCodecs,
+    buttonShouldBeDisabled: !webCodecsSupported
+  })
 
   return (
     <main className="min-h-screen bg-gray-50 p-4">
@@ -142,22 +162,24 @@ export default function Home() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   !useWebCodecs
                     ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-50'
                 }`}
               >
                 FFmpeg (Full Support)
               </button>
               <button
                 onClick={() => setUseWebCodecs(true)}
-                disabled={!isWebCodecsSupported()}
+                disabled={!webCodecsSupported}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  useWebCodecs
-                    ? 'bg-green-100 text-green-700'
-                    : 'text-gray-500 hover:text-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed'
+                  !webCodecsSupported
+                    ? 'text-gray-300 cursor-not-allowed bg-gray-100'
+                    : useWebCodecs
+                      ? 'bg-green-100 text-green-700'
+                      : 'text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-50'
                 }`}
               >
                 WebCodecs (Native)
-                {!isWebCodecsSupported() && ' ❌'}
+                {!webCodecsSupported && ' ❌'}
               </button>
             </div>
           </div>
@@ -165,7 +187,7 @@ export default function Home() {
           {/* Info about current converter */}
           <div className="mt-4 text-sm text-gray-500">
             {useWebCodecs ? (
-              isWebCodecsSupported() ? (
+              webCodecsSupported ? (
                 <span className="text-green-600">✅ Using native browser WebCodecs API</span>
               ) : (
                 <span className="text-red-600">❌ WebCodecs not supported in this browser</span>
